@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>DRAKON SKY</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter','Segoe UI',system-ui,sans-serif}
+    html,body{width:100%;height:100%;background:#06060e;color:#e8e8e8;overflow:hidden;position:fixed;top:0;left:0}
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(0,245,212,0.15);border-radius:10px}
+    .app{width:100%;height:100%;max-width:100%;background:linear-gradient(180deg,#0a0a18 0%,#0e0e1a 100%);display:flex;flex-direction:column;overflow:hidden;position:relative}
+    .bg-glow{position:fixed;top:-30%;left:-30%;width:160%;height:160%;background:radial-gradient(ellipse at 30% 20%,rgba(0,245,212,0.04),transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(123,47,252,0.04),transparent 55%);pointer-events:none;z-index:0}
+    .status-bar{background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.03);padding:6px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:2;min-height:30px;backdrop-filter:blur(20px)}
+    .status-bar .left{font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:3px;font-weight:500}
+    .status-bar .right{font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:1px;display:flex;align-items:center;gap:6px}
+    .status-bar .right .dot{display:inline-block;width:6px;height:6px;background:#00f5d4;border-radius:50%;margin-right:2px;animation:pulse-dot 1.8s infinite;box-shadow:0 0 12px rgba(0,245,212,0.2)}
+    @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.85)}}
+    #login{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 28px;z-index:1;position:relative}
+    .brand{text-align:center;margin-bottom:32px}
+    .brand .logo{font-size:56px;display:block;margin-bottom:8px;filter:drop-shadow(0 0 40px rgba(0,245,212,0.05))}
+    .brand h1{font-size:30px;font-weight:800;background:linear-gradient(135deg,#00f5d4,#7b2ffc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:5px;text-shadow:0 0 60px rgba(0,245,212,0.03)}
+    .brand .sub{font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:8px;text-transform:uppercase;margin-top:4px}
+    .brand .badge{display:inline-block;background:rgba(0,245,212,0.04);border:1px solid rgba(0,245,212,0.06);border-radius:30px;padding:3px 20px;font-size:8px;color:#00f5d4;letter-spacing:3px;margin-top:8px;backdrop-filter:blur(10px)}
+    .input-group{margin-bottom:14px}
+    .input-group label{display:block;font-size:9px;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:6px;font-weight:500}
+    .input-group input,.input-group select{width:100%;padding:16px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:16px;color:#fff;font-size:15px;outline:none;transition:0.3s;backdrop-filter:blur(10px)}
+    .input-group input:focus,.input-group select:focus{border-color:rgba(0,245,212,0.15);background:rgba(255,255,255,0.03);box-shadow:0 0 40px rgba(0,245,212,0.02)}
+    .input-group select option{background:#0e0e1a;color:#fff}
+    .btn-login{width:100%;padding:17px;border:none;border-radius:16px;background:linear-gradient(135deg,#00f5d4,#7b2ffc);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 4px 40px rgba(0,245,212,0.06);transition:0.3s;letter-spacing:1.5px;position:relative;overflow:hidden}
+    .btn-login::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,transparent 30%,rgba(255,255,255,0.03) 70%);pointer-events:none}
+    .btn-login:hover{opacity:0.92;transform:scale(1.01);box-shadow:0 4px 60px rgba(0,245,212,0.08)}
+    .login-footer{display:flex;justify-content:center;gap:32px;margin-top:20px;font-size:9px;color:rgba(255,255,255,0.06);letter-spacing:2px}
+    .login-footer span{cursor:pointer;transition:0.3s;padding:4px 8px;border-radius:20px}
+    .login-footer span:hover{color:#00f5d4;background:rgba(0,245,212,0.02)}
+    .error-msg{color:#ff6b6b;font-size:12px;text-align:center;margin-top:12px;display:none;line-height:1.8;padding:12px;background:rgba(255,107,107,0.02);border-radius:12px;border:1px solid rgba(255,107,107,0.04)}
+    .error-msg a{color:#00f5d4;text-decoration:none;font-weight:600}
+    #dash{display:none;flex:1;flex-direction:column;overflow:hidden;z-index:1;position:relative;padding-top:4px}
+    .dash-header{display:flex;justify-content:space-between;align-items:center;padding:8px 20px 6px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.02)}
+    .dash-header .status-aktif{font-size:9px;color:#00f5d4;font-weight:600;border:1px solid rgba(0,245,212,0.06);padding:4px 16px;border-radius:30px;background:rgba(0,245,212,0.02);letter-spacing:0.5px;backdrop-filter:blur(10px)}
+    .dash-header .status-aktif::before{content:"● ";color:#00f5d4}
+    .dash-header .btn-logout{background:none;border:1px solid rgba(255,107,107,0.06);color:#ff6b6b;padding:4px 16px;border-radius:30px;font-size:9px;cursor:pointer;font-weight:500;transition:0.3s;letter-spacing:0.5px;backdrop-filter:blur(10px)}
+    .dash-header .btn-logout:hover{background:rgba(255,107,107,0.02);border-color:rgba(255,107,107,0.12)}
+    .profile-section{display:flex;flex-direction:column;align-items:center;padding:10px 0 6px;flex-shrink:0}
+    .profile-section .avatar-wrapper{width:70px;height:70px;flex-shrink:0}
+    .profile-section .avatar-default{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,rgba(0,245,212,0.04),rgba(123,47,252,0.04));border:2px solid rgba(0,245,212,0.04);display:flex;align-items:center;justify-content:center;font-size:36px;color:rgba(255,255,255,0.04);transition:0.3s;box-shadow:0 0 60px rgba(0,245,212,0.02)}
+    .banner-wrapper{width:100%;padding:0 16px 8px;flex-shrink:0}
+    .banner-card{width:100%;aspect-ratio:16/9;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 8px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03)}
+    .banner-card .banner-img{width:100%;height:100%;object-fit:cover;display:block}
+    .banner-card .banner-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.7) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .banner-card .banner-name{font-size:28px;font-weight:800;color:#fff;letter-spacing:4px;text-shadow:0 4px 40px rgba(0,0,0,0.6);z-index:1}
+    .banner-card .banner-role{font-size:12px;font-weight:500;letter-spacing:5px;text-transform:uppercase;margin-top:6px;z-index:1;text-shadow:0 4px 40px rgba(0,0,0,0.6)}
+    .banner-card .banner-role.dev{color:#00f5d4}
+    .banner-card .banner-role.member{color:#ffd700}
+    .banner-card .banner-sub{font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:3px;margin-top:8px;z-index:1;text-shadow:0 4px 40px rgba(0,0,0,0.6)}
+    .dash-scroll{flex:1;overflow-y:auto;padding:4px 18px 12px;-webkit-overflow-scrolling:touch}
+    .account-card{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.03);border-radius:18px;padding:18px;text-align:center;margin-bottom:14px;backdrop-filter:blur(20px);transition:0.3s}
+    .account-card:hover{border-color:rgba(0,245,212,0.03)}
+    .account-card .label{font-size:8px;color:rgba(255,255,255,0.08);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;font-weight:500}
+    .account-card .name{font-size:22px;font-weight:700;color:#fff;letter-spacing:1.5px}
+    .account-card .role-badge{display:inline-block;background:rgba(0,245,212,0.03);border:1px solid rgba(0,245,212,0.04);border-radius:30px;padding:3px 18px;font-size:9px;color:#00f5d4;margin-top:6px;backdrop-filter:blur(10px)}
+    .account-card .role-badge.member{color:#ffd700;background:rgba(255,215,0,0.02);border-color:rgba(255,215,0,0.03)}
+    .account-card .expiry{font-size:10px;color:rgba(255,255,255,0.1);margin-top:6px}
+    .account-card .expiry span{color:rgba(255,255,255,0.3);font-weight:600}
+    .stats-row{display:flex;justify-content:space-around;padding:14px 0;border-top:1px solid rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.02);margin-bottom:14px;flex-shrink:0}
+    .stats-row .item{text-align:center}
+    .stats-row .item .num{font-size:20px;font-weight:800;background:linear-gradient(135deg,#00f5d4,#7b2ffc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stats-row .item .lbl{font-size:7px;color:rgba(255,255,255,0.06);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-weight:500}
+    .info-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0}
+    .info-row .berita{font-size:9px;color:rgba(255,255,255,0.06);letter-spacing:1px}
+    .info-row .berita span{color:rgba(255,255,255,0.2);font-weight:600}
+    .pair-section{background:rgba(0,245,212,0.02);border:1px solid rgba(0,245,212,0.04);border-radius:16px;padding:16px;text-align:center;margin-bottom:14px;display:none;flex-shrink:0;backdrop-filter:blur(20px)}
+    .pair-section .label{font-size:8px;color:rgba(255,255,255,0.1);text-transform:uppercase;letter-spacing:2.5px}
+    .pair-section .code{font-size:28px;font-weight:800;color:#00f5d4;letter-spacing:5px;margin-top:6px;font-family:monospace;text-shadow:0 0 40px rgba(0,245,212,0.03)}
+    .pair-section .note{font-size:8px;color:rgba(255,255,255,0.06);margin-top:6px}
+    .pair-section .btn-row{display:flex;gap:10px;margin-top:10px}
+    .pair-section .btn-row button{flex:1;padding:10px;border:none;border-radius:12px;color:#fff;font-weight:700;font-size:11px;cursor:pointer;transition:0.3s;letter-spacing:1.5px}
+    .pair-section .btn-row button:hover{opacity:0.9;transform:scale(1.02)}
+    .pair-section .btn-row .btn-connect{background:linear-gradient(135deg,#00f5d4,#00c4a8);box-shadow:0 4px 30px rgba(0,245,212,0.05)}
+    .pair-section .btn-row .btn-hapus{background:linear-gradient(135deg,#ff6b6b,#ee0979);box-shadow:0 4px 30px rgba(255,107,107,0.05)}
+    .pair-section .btn-row button:disabled{opacity:0.2;cursor:not-allowed;transform:none}
+    .sub{display:none;flex-direction:column;flex:1}
+    .sub.show{display:flex}
+    .sub .back{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);color:rgba(255,255,255,0.2);padding:6px 18px;border-radius:30px;font-size:9px;cursor:pointer;margin-bottom:14px;align-self:flex-start;flex-shrink:0;transition:0.3s;letter-spacing:0.5px;backdrop-filter:blur(10px)}
+    .sub .back:hover{border-color:rgba(255,255,255,0.04);color:#fff;background:rgba(255,255,255,0.02)}
+    .sub .title{font-size:20px;font-weight:700;flex-shrink:0;letter-spacing:0.5px}
+    .sub .subtitle{font-size:10px;color:rgba(255,255,255,0.06);margin-bottom:14px;flex-shrink:0;letter-spacing:1px}
+    .sub .page-content{flex:1;overflow-y:auto;padding-bottom:8px}
+    .home-full{display:flex;flex-direction:column;gap:12px}
+    .home-full .stats-row{border:none;padding:0 0 10px 0;margin-bottom:0}
+    .home-full .info-card{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);border-radius:16px;padding:16px;backdrop-filter:blur(20px);transition:0.3s}
+    .home-full .info-card:hover{border-color:rgba(0,245,212,0.02)}
+    .home-full .info-card .lbl{font-size:8px;color:rgba(255,255,255,0.06);text-transform:uppercase;letter-spacing:1.5px}
+    .home-full .info-card .val{font-size:14px;font-weight:600;margin-top:4px}
+    .chat-full{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 0}
+    .chat-full .chat-avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,rgba(0,245,212,0.04),rgba(123,47,252,0.04));border:2px solid rgba(0,245,212,0.04);display:flex;align-items:center;justify-content:center;font-size:42px;color:rgba(255,255,255,0.04);box-shadow:0 0 60px rgba(0,245,212,0.02)}
+    .chat-full .name{font-size:24px;font-weight:700;letter-spacing:0.5px}
+    .chat-full .role-access{font-size:12px;color:#00f5d4;background:rgba(0,245,212,0.02);padding:6px 24px;border-radius:30px;border:1px solid rgba(0,245,212,0.03);backdrop-filter:blur(10px)}
+    .chat-full .role-access.member{color:#ffd700;background:rgba(255,215,0,0.02);border-color:rgba(255,215,0,0.03)}
+    .chat-full .status-text{font-size:10px;color:rgba(255,255,255,0.06);margin-top:6px;letter-spacing:0.5px}
+    .chat-full .status-text span{color:#00f5d4}
+    .target-input{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);border-radius:16px;padding:14px;margin-bottom:14px;flex-shrink:0;backdrop-filter:blur(20px)}
+    .target-input label{font-size:9px;color:rgba(255,255,255,0.1);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:6px;font-weight:500}
+    .target-input input{width:100%;padding:14px 16px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.02);border-radius:14px;color:#fff;font-size:14px;outline:none;transition:0.3s}
+    .target-input input:focus{border-color:rgba(0,245,212,0.04);background:rgba(0,0,0,0.4)}
+    .target-input .example{font-size:8px;color:rgba(255,255,255,0.04);margin-top:6px;letter-spacing:0.5px}
+    .loading-bar{width:100%;height:3px;background:rgba(255,255,255,0.02);border-radius:6px;overflow:hidden;margin-bottom:14px;display:none}
+    .loading-bar .fill{width:0%;height:100%;background:linear-gradient(90deg,#00f5d4,#7b2ffc);border-radius:6px;transition:width 0.1s}
+    .bug-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;flex-shrink:0}
+    .bug-card{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:0.3s;opacity:0.3;pointer-events:none;backdrop-filter:blur(20px)}
+    .bug-card.active{opacity:1;pointer-events:auto}
+    .bug-card:hover{background:rgba(255,255,255,0.02);border-color:rgba(0,245,212,0.02)}
+    .bug-card .icon{font-size:28px;display:block;margin-bottom:4px}
+    .bug-card .name{font-size:11px;font-weight:500}
+    .bug-card .desc{font-size:8px;color:rgba(255,255,255,0.08);margin-top:4px}
+    .bug-card.selected{border-color:#00f5d4;background:rgba(0,245,212,0.02);box-shadow:0 0 40px rgba(0,245,212,0.02)}
+    .bug-card.selected .name{color:#00f5d4}
+    .bug-card .check{display:none;font-size:13px;color:#00f5d4;margin-left:4px}
+    .bug-card.selected .check{display:inline}
+    .bug-card.disabled{opacity:0.2;pointer-events:none;filter:grayscale(1)}
+    .bug-card .btn-row-card{display:flex;gap:6px;margin-top:8px}
+    .bug-card .btn-masuk{flex:1;padding:8px;border:none;border-radius:10px;background:linear-gradient(135deg,#00f5d4,#00c4a8);color:#fff;font-weight:700;font-size:10px;cursor:pointer;transition:0.3s;letter-spacing:1px;box-shadow:0 4px 30px rgba(0,245,212,0.03)}
+    .bug-card .btn-masuk:hover{opacity:0.9;transform:scale(1.02)}
+    .bug-card .btn-masuk:disabled{opacity:0.2;cursor:not-allowed;transform:none}
+    .bug-card .btn-reset-card{flex:1;padding:8px;border:none;border-radius:10px;background:linear-gradient(135deg,#ff6b6b,#ee0979);color:#fff;font-weight:700;font-size:10px;cursor:pointer;transition:0.3s;letter-spacing:1px;box-shadow:0 4px 30px rgba(255,107,107,0.03)}
+    .bug-card .btn-reset-card:hover{opacity:0.9;transform:scale(1.02)}
+    .bug-card .btn-reset-card:disabled{opacity:0.2;cursor:not-allowed;transform:none}
+    .btn-action{width:100%;padding:16px;border:none;border-radius:16px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:1.5px;flex-shrink:0;transition:0.3s;position:relative;overflow:hidden}
+    .btn-action::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,transparent 30%,rgba(255,255,255,0.02) 70%);pointer-events:none}
+    .btn-action:hover{opacity:0.92;transform:scale(1.01)}
+    .btn-action.attack{background:linear-gradient(135deg,#ff6b6b,#ee0979);box-shadow:0 4px 40px rgba(255,107,107,0.06)}
+    .btn-action:disabled{opacity:0.15;cursor:not-allowed;transform:none}
+    .success-msg{background:rgba(0,245,212,0.02);border:1px solid rgba(0,245,212,0.04);border-radius:16px;padding:16px;text-align:center;margin-top:14px;display:none;flex-shrink:0;backdrop-filter:blur(20px)}
+    .success-msg .icon{font-size:32px;display:block}
+    .success-msg .text{font-size:14px;font-weight:600;color:#00f5d4;margin-top:4px}
+    .success-msg .target{font-size:11px;color:rgba(255,255,255,0.1);margin-top:4px}
+    .info-card{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);border-radius:16px;padding:14px 16px;margin-bottom:8px;backdrop-filter:blur(20px)}
+    .info-card .lbl{font-size:8px;color:rgba(255,255,255,0.06);text-transform:uppercase;letter-spacing:1.5px}
+    .info-card .val{font-size:14px;font-weight:600;margin-top:4px}
+    .rules{list-style:none;padding:0}
+    .rules li{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.01);font-size:11px;display:flex;gap:8px;color:rgba(255,255,255,0.4)}
+    .rules li:last-child{border-bottom:none}
+    .rules li .n{color:#00f5d4;font-weight:600}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .card{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:0.3s;backdrop-filter:blur(20px)}
+    .card:hover{background:rgba(255,255,255,0.02);border-color:rgba(0,245,212,0.02)}
+    .card .icon{font-size:28px;display:block}
+    .card .name{font-size:10px;font-weight:500;margin-top:6px}
+    .card .desc{font-size:7px;color:rgba(255,255,255,0.06);margin-top:4px}
+    .create-form{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);border-radius:18px;padding:18px;margin-bottom:14px;backdrop-filter:blur(20px)}
+    .create-form .form-title{font-size:15px;font-weight:600;margin-bottom:14px;text-align:center;color:#00f5d4;letter-spacing:1px}
+    .create-form .input-group{margin-bottom:10px}
+    .create-form .input-group label{font-size:8px;color:rgba(255,255,255,0.08);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:4px}
+    .create-form .input-group input,.create-form .input-group select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);border-radius:14px;color:#fff;font-size:13px;outline:none;transition:0.3s}
+    .create-form .input-group input:focus,.create-form .input-group select:focus{border-color:rgba(0,245,212,0.04)}
+    .create-form .input-group select option{background:#0e0e1a;color:#fff}
+    .btn-create{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#00f5d4,#7b2ffc);color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:0.3s;letter-spacing:1.5px;box-shadow:0 4px 40px rgba(0,245,212,0.03)}
+    .btn-create:hover{opacity:0.92;transform:scale(1.01)}
+    .user-list{margin-top:14px}
+    .user-list .list-title{font-size:9px;color:rgba(255,255,255,0.06);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+    .user-item{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.01);border-radius:12px;margin-bottom:6px;backdrop-filter:blur(20px);transition:0.3s}
+    .user-item:hover{border-color:rgba(0,245,212,0.02)}
+    .user-item .u-name{font-size:12px;font-weight:500}
+    .user-item .u-role{font-size:8px;padding:2px 12px;border-radius:30px;background:rgba(0,245,212,0.02);border:1px solid rgba(0,245,212,0.02);color:#00f5d4}
+    .user-item .u-role.member{color:#ffd700;background:rgba(255,215,0,0.02);border-color:rgba(255,215,0,0.02)}
+    .user-item .u-exp{font-size:8px;color:rgba(255,255,255,0.08);padding:2px 10px;border-radius:30px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.01)}
+    .user-item .u-del{background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:14px;padding:0 4px;transition:0.3s;opacity:0.4}
+    .user-item .u-del:hover{opacity:1;color:#ff4444}
+    .footer-menu{display:flex;justify-content:space-around;padding:12px 0 18px;border-top:1px solid rgba(255,255,255,0.02);flex-shrink:0;background:rgba(10,10,24,0.6);backdrop-filter:blur(30px)}
+    .footer-menu .item{text-align:center;cursor:pointer;padding:6px 12px;border-radius:12px;transition:0.3s}
+    .footer-menu .item:hover{background:rgba(255,255,255,0.01)}
+    .footer-menu .item .icon{font-size:22px;display:block;filter:grayscale(0.8);transition:0.3s}
+    .footer-menu .item .lbl{font-size:7px;color:rgba(255,255,255,0.04);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;transition:0.3s}
+    .footer-menu .item.active .lbl{color:#00f5d4}
+    .footer-menu .item.active .icon{filter:grayscale(0);filter:drop-shadow(0 0 20px rgba(0,245,212,0.02))}
+    .footer-menu .item.active{background:rgba(0,245,212,0.01);border-radius:12px}
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(8,8,16,0.95);backdrop-filter:blur(30px);padding:12px 28px;border-radius:40px;font-size:12px;border:1px solid rgba(0,245,212,0.03);color:#00f5d4;display:none;z-index:999;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis;box-shadow:0 10px 60px rgba(0,0,0,0.6);letter-spacing:0.5px}
+    @media(max-width:400px){.brand .logo{font-size:44px}.brand h1{font-size:24px}.profile-section .avatar-wrapper{width:56px;height:56px}.profile-section .avatar-default{font-size:28px}.banner-card .banner-name{font-size:20px}.banner-card .banner-role{font-size:10px}.account-card .name{font-size:18px}.chat-full .chat-avatar{width:68px;height:68px;font-size:34px}.chat-full .name{font-size:20px}.dash-header .status-aktif{font-size:7px;padding:2px 12px}.dash-header .btn-logout{font-size:7px;padding:2px 12px}.bug-grid,.grid2{gap:6px}.footer-menu .item .icon{font-size:18px}}
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow"></div>
+  <div class="app">
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span class="left">✦ DRAKON SKY</span>
+      <span class="right"><span class="dot"></span>ONLINE</span>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login">
+      <div class="brand">
+        <span class="logo">💥</span>
+        <h1>ᎠᎡᎪᏀϴΝՏ ՏᏦᎽ</h1>
+        <div class="sub">Advanced Security Panel</div>
+        <div class="badge">✦ BUILD 2.0 ✦</div>
+      </div>
+      <div class="input-group">
+        <label>USERNAME</label>
+        <input type="text" id="userInput" placeholder="Masukkan username">
+      </div>
+      <div class="input-group">
+        <label>PASSWORD</label>
+        <input type="password" id="passInput" placeholder="Masukkan password">
+      </div>
+      <button class="btn-login" onclick="login()">→ SIGN IN</button>
+      <div id="err" class="error-msg">❌ Username atau password salah!<br><a href="https://t.me/kykedua" target="_blank">⚠️ SALAH BEGO SANA BUY AKSES KE @kykedua</a></div>
+      <div class="login-footer">
+        <span onclick="toast('🔐 Secure connection established')">🔒 Secure</span>
+        <span onclick="toast('⚡ Fast & reliable')">⚡ Fast</span>
+        <span onclick="toast('🛡️ Trusted platform')">🛡️ Trusted</span>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash">
+      <div class="dash-header">
+        <span class="status-aktif">AKTIF</span>
+        <button class="btn-logout" onclick="logout()">• LOG OUT</button>
+      </div>
+      <div class="profile-section">
+        <div class="avatar-wrapper">
+          <div class="avatar-default" id="avatarDefault">👤</div>
+        </div>
+      </div>
+      <div class="dash-scroll">
+        <div class="banner-wrapper">
+          <div class="banner-card">
+            <img src="https://files.catbox.moe/dfhm4i.jpg" alt="banner" class="banner-img" id="bannerImg" onerror="this.style.display='none'">
+            <div class="banner-overlay">
+              <div class="banner-name" id="bannerName">KYKEDUA</div>
+              <div class="banner-role dev" id="bannerRole">✦ DEVELOPER</div>
+              <div class="banner-sub">● ACTIVE CONNECTIONS</div>
+            </div>
+          </div>
+        </div>
+        <div class="account-card">
+          <div class="label">ACCOUNT MANAGER</div>
+          <div class="name" id="accName">ZSNZ</div>
+          <div class="role-badge" id="accRole">✦ DEVELOPER</div>
+          <div class="expiry">TANGGAL HAB. <span>2299-09-07</span></div>
+        </div>
+        <div class="stats-row">
+          <div class="item"><div class="num" id="totalUsersNum">121</div><div class="lbl">Total Users</div></div>
+          <div class="item"><div class="num">0</div><div class="lbl">Active Connections</div></div>
+          <div class="item"><div class="num">2299</div><div class="lbl">Masa Aktif</div></div>
+        </div>
+        <div class="info-row"><div class="berita">BERITA <span>2 Artikel</span></div></div>
+
+        <!-- PAIR SECTION -->
+        <div id="pairSection" class="pair-section">
+          <div class="label">📌 PAIR CODE</div>
+          <div class="code">DRAGONS2</div>
+          <div class="note">Gunakan kode ini untuk pairing WhatsApp</div>
+          <div class="btn-row">
+            <button class="btn-connect" id="btnConnect" onclick="connectWhatsapp()">• CONNECT</button>
+            <button class="btn-hapus" id="btnHapus" onclick="hapusWhatsapp()">🗑️ HAPUS</button>
+          </div>
+        </div>
+
+        <!-- HOME -->
+        <div id="page-home" class="sub show">
+          <button class="back" onclick="hideAll()">← BACK</button>
+          <div class="title">🏠 HOME</div>
+          <div class="subtitle">Dashboard utama — status & aktivitas</div>
+          <div class="page-content">
+            <div class="home-full">
+              <div class="stats-row">
+                <div class="item"><div class="num">12</div><div class="lbl">Online</div></div>
+                <div class="item"><div class="num">3</div><div class="lbl">Alert</div></div>
+                <div class="item"><div class="num">190ms</div><div class="lbl">Ping</div></div>
+              </div>
+              <div class="info-card"><div class="lbl">Server Status</div><div class="val" style="color:#00f5d4;">● ONLINE</div></div>
+              <div class="info-card"><div class="lbl">Protected by</div><div class="val" style="background:linear-gradient(135deg,#00f5d4,#7b2ffc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ᎠᎡᎪᏀϴΝՏ ՏᏦᎽ Security</div></div>
+              <div class="info-card"><div class="lbl">Last Activity</div><div class="val" style="color:rgba(255,255,255,0.1);font-size:11px;">Today, 10:32 PM</div></div>
+              <div class="info-card"><div class="lbl">Device</div><div class="val" style="color:rgba(255,255,255,0.1);font-size:11px;">Chrome • Android</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHAT -->
+        <div id="page-chat" class="sub">
+          <button class="back" onclick="hideAll()">← BACK</button>
+          <div class="title">💬 CHAT</div>
+          <div class="subtitle">Profil & akses</div>
+          <div class="page-content" style="display:flex;align-items:center;justify-content:center;min-height:200px;">
+            <div class="chat-full">
+              <div class="chat-avatar" id="chatAvatar">👤</div>
+              <div class="name" id="chatName">@kykedua</div>
+              <div class="role-access" id="chatRole">✦ ROLE AKSES: DEVELOPER</div>
+              <div class="status-text">Status: <span>Online</span> • Aktif sejak 2024</div>
+              <div class="status-text" style="font-size:8px;color:rgba(255,255,255,0.02);">Terakhir login: hari ini</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUG -->
+        <div id="page-bug" class="sub">
+          <button class="back" onclick="hideAll()">← BACK</button>
+          <div class="title">🐛 BUG</div>
+          <div class="subtitle">Pilih exploit / bug yang tersedia</div>
+          <div class="page-content">
+            <div class="target-input">
+              <label>📱 NOMOR TARGET</label>
+              <input type="text" id="targetNumber" placeholder="628xxxxxxxxx" oninput="validateNumber(this)">
+              <div class="example">Contoh: 628123456789 (62 + nomor) • Hanya ANGKA!</div>
+            </div>
+
+            <div class="loading-bar" id="loadingBar">
+              <div class="fill" id="loadingFill"></div>
+            </div>
+
+            <div class="bug-grid">
+              <!-- WHATSAPP SENDER -->
+              <div class="bug-card" id="bugWhatsapp" data-bug="WHATSAPP SENDER">
+                <span class="icon">📲</span>
+                <div class="name">WHATSAPP SENDER <span class="check">✅</span></div>
+                <div class="desc">Kirim pesan massal</div>
+                <div class="btn-row-card">
+                  <button class="btn-masuk" id="btnMasuk" onclick="event.stopPropagation(); startWhatsappFlow()">🔑 MASUK</button>
+                  <button class="btn-reset-card" id="btnResetCard" onclick="event.stopPropagation(); hapusWhatsapp()">🗑️ HAPUS</button>
+                </div>
+              </div>
+              <!-- FC CLICK -->
+              <div class="bug-card disabled" id="bugFc" data-bug="FC CLICK" onclick="selectBug(this)">
+                <span class="icon">👆</span>
+                <div class="name">FC CLICK <span class="check">✅</span></div>
+                <div class="desc">ID: blankforce</div>
+              </div>
+              <!-- DELAY -->
+              <div class="bug-card disabled" id="bugDelay" data-bug="DELAY" onclick="selectBug(this)">
+                <span class="icon">⏳</span>
+                <div class="name">DELAY <span class="check">✅</span></div>
+                <div class="desc">ID: buldo</div>
+              </div>
+              <!-- COMBO -->
+              <div class="bug-card disabled" id="bugCombo" data-bug="COMBO" onclick="selectBug(this)">
+                <span class="icon">💥</span>
+                <div class="name">COMBO <span class="check">✅</span></div>
+                <div class="desc">ID: crashno</div>
+              </div>
+            </div>
+
+            <button class="btn-action attack" id="actionBtn" onclick="executeAction()" disabled>⚔️ ATTACK</button>
+            <div id="successMsg" class="success-msg">
+              <span class="icon">✅</span>
+              <div class="text">SUCCESS!</div>
+              <div class="target" id="successTarget">Target: 628xxxxxxxxx</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INFO -->
+        <div id="page-info" class="sub">
+          <button class="back" onclick="hideAll()">← BACK</button>
+          <div class="title">ℹ️ INFO</div>
+          <div class="subtitle">Informasi akun & aturan</div>
+          <div class="page-content">
+            <div class="info-card"><div class="lbl">ACCOUNT</div><div class="val" id="infoAccount">@kykedua</div></div>
+            <div class="info-card"><div class="lbl">ROLE</div><div class="val" id="infoRole" style="color:#00f5d4;">DEVELOPER</div></div>
+            <div class="info-card"><div class="lbl">Tanggal Habis</div><div class="val">2299-09-07</div></div>
+            <div style="margin-top:14px;font-weight:600;font-size:14px;">📜 RULES</div>
+            <ul class="rules" style="margin-top:6px;">
+              <li><span class="n">1.</span> Larangan Barter Akun</li>
+              <li><span class="n">2.</span> Larangan Membagikan Akun</li>
+              <li><span class="n">3.</span> Larangan Menjual Akun</li>
+              <li><span class="n">4.</span> Tidak Ada Refund</li>
+              <li><span class="n">5.</span> Gunakan Dengan Bijak</li>
+              <li><span class="n">6.</span> Patuh Pada Developer</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- RAT -->
+        <div id="page-rat" class="sub">
+          <button class="back" onclick="hideAll()">← BACK</button>
+          <div class="title">🖥️ RAT</div>
+          <div class="subtitle">Remote Access Tools</div>
+          <div class="page-content">
+            <div class="grid2">
+              <div class="card" onclick="toast('🖥️ SCREEN CAPTURE diaktifkan')"><span class="icon">📸</span><div class="name">SCREEN CAPTURE</div></div>
+              <div class="card" onclick="toast('🖥️ KEYLOGGER diaktifkan')"><span class="icon">⌨️</span><div class="name">KEYLOGGER</div></div>
+              <div class="card" onclick="toast('🖥️ FILE MANAGER dibuka')"><span class="icon">📁</span><div class="name">FILE MANAGER</div></div>
+              <div class="card" onclick="toast('🖥️ CAMERA ACCESS diaktifkan')"><span class="icon">📷</span><div class="name">CAMERA</div></div>
+              <div class="card" onclick="toast('🖥️ MICROPHONE diaktifkan')"><span class="icon">🎤</span><div class="name">MICROPHONE</div></div>
+              <div class="card" onclick="toast('🖥️ LOCATION TRACKER diaktifkan')"><span class="icon">📍</span><div class="name">LOCATION</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CREATE AKUN -->
+        <div id="page-create" class="sub">
+          <button class="back" onclick="hideAll()">← BACK</button>
+          <div class="title">🔑 CREATE AKUN</div>
+          <div class="subtitle">Buat akun baru dengan durasi aktif</div>
+          <div class="page-content">
+            <div class="create-form">
+              <div class="form-title">📝 FORM BUAT AKUN</div>
+              <div class="input-group"><label>USERNAME</label><input type="text" id="newUser" placeholder="Masukkan username"></div>
+              <div class="input-group"><label>PASSWORD</label><input type="text" id="newPass" placeholder="Masukkan password"></div>
+              <div class="input-group"><label>ROLE</label><select id="newRole"><option value="MEMBER">MEMBER</option><option value="DEVELOPER">DEVELOPER</option></select></div>
+              <div class="input-group">
+                <label>DURASI AKTIF</label>
+                <select id="newDuration">
+                  <option value="1">1 Hari</option>
+                  <option value="3">3 Hari</option>
+                  <option value="7" selected>7 Hari</option>
+                  <option value="14">14 Hari</option>
+                  <option value="30">30 Hari</option>
+                  <option value="0">♾️ Permanen</option>
+                </select>
+              </div>
+              <button class="btn-create" onclick="createAccount()">➕ BUAT AKUN</button>
+            </div>
+
+            <div class="user-list">
+              <div class="list-title">📋 DAFTAR AKUN TERSIMPAN</div>
+              <div id="userListContainer"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end dash-scroll -->
+
+      <!-- FOOTER MENU -->
+      <div class="footer-menu">
+        <div class="item active" onclick="showPage('home')"><span class="icon">🏠</span><span class="lbl">HOME</span></div>
+        <div class="item" onclick="showPage('chat')"><span class="icon">💬</span><span class="lbl">CHAT</span></div>
+        <div class="item" onclick="showPage('bug')"><span class="icon">🐛</span><span class="lbl">BUG</span></div>
+        <div class="item" onclick="showPage('info')"><span class="icon">ℹ️</span><span class="lbl">INFO</span></div>
+        <div class="item" onclick="showPage('rat')"><span class="icon">🖥️</span><span class="lbl">RAT</span></div>
+        <div class="item" id="createMenu" style="display:none;" onclick="showPage('create')"><span class="icon">🔑</span><span class="lbl">CREATE</span></div>
+      </div>
+
+    </div><!-- end dash -->
+  </div><!-- end app -->
+
+  <!-- TOAST -->
+  <div id="toast" class="toast">📡</div>
+
+  <script>
+    // ===== DATA AKUN =====
+    const DEFAULT_USERS = {
+      "kykedua": { password: "123", role: "DEVELOPER", expiry: Infinity },
+      "fadil": { password: "iky", role: "MEMBER", expiry: Infinity },
+      "member": { password: "kontol", role: "MEMBER", expiry: Infinity }
+    };
+
+    function loadUsers() {
+      const stored = localStorage.getItem('drakon_users');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          Object.keys(parsed).forEach(key => {
+            if (parsed[key].expiry !== undefined) {
+              parsed[key].expiry = Number(parsed[key].expiry);
+            } else {
+              parsed[key].expiry = Infinity;
+            }
+          });
+          return parsed;
+        } catch (e) { return { ...DEFAULT_USERS }; }
+      }
+      return { ...DEFAULT_USERS };
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('drakon_users', JSON.stringify(users));
+      updateTotalUsers();
+    }
+
+    let USERS = loadUsers();
+    let currentUser = null;
+    let currentRole = null;
+
+    function updateTotalUsers() {
+      const total = Object.keys(USERS).length;
+      const el = document.getElementById('totalUsersNum');
+      if (el) el.textContent = total;
+    }
+
+    function renderUserList() {
+      const container = document.getElementById('userListContainer');
+      if (!container) return;
+      const keys = Object.keys(USERS);
+      if (keys.length === 0) {
+        container.innerHTML = '<div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.03);padding:12px 0;">Belum ada akun</div>';
+        return;
+      }
+      let html = '';
+      const now = Date.now();
+      keys.forEach(u => {
+        const user = USERS[u];
+        const role = user.role || 'MEMBER';
+        const isDev = role === 'DEVELOPER';
+        const expiry = user.expiry;
+        let expiryText = '♾️';
+        if (expiry !== undefined && expiry !== Infinity) {
+          const remaining = Math.max(0, Math.floor((expiry - now) / 1000 / 60 / 60 / 24));
+          expiryText = remaining + 'd';
+          if (remaining <= 0) expiryText = '⏰';
+        }
+        html += `
+          <div class="user-item">
+            <span class="u-name">${u}</span>
+            <span class="u-role ${isDev ? '' : 'member'}">${role}</span>
+            <span class="u-exp">${expiryText}</span>
+            <button class="u-del" onclick="deleteUser('${u}')">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+      updateTotalUsers();
+    }
+
+    function createAccount() {
+      const username = document.getElementById('newUser').value.trim().toLowerCase();
+      const password = document.getElementById('newPass').value.trim();
+      const role = document.getElementById('newRole').value;
+      const durationDays = parseInt(document.getElementById('newDuration').value);
+
+      if (!username) { toast('❌ Username tidak boleh kosong!'); return; }
+      if (!password) { toast('❌ Password tidak boleh kosong!'); return; }
+      if (USERS[username]) { toast('❌ Username sudah ada!'); return; }
+
+      let expiry = Infinity;
+      if (durationDays > 0) {
+        expiry = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
+      }
+
+      USERS[username] = { password, role, expiry };
+      saveUsers(USERS);
+      renderUserList();
+      document.getElementById('newUser').value = '';
+      document.getElementById('newPass').value = '';
+      toast('✅ Akun ' + username + ' dibuat! Durasi: ' + (durationDays > 0 ? durationDays + ' hari' : 'Permanen'));
+    }
+
+    function deleteUser(username) {
+      if (username === 'kykedua') { toast('❌ Tidak bisa hapus akun utama!'); return; }
+      if (!confirm('Hapus akun ' + username + '?')) return;
+      delete USERS[username];
+      saveUsers(USERS);
+      renderUserList();
+      toast('🗑️ Akun ' + username + ' dihapus!');
+    }
+
+    function cleanupExpiredAccounts() {
+      const now = Date.now();
+      let changed = false;
+      Object.keys(USERS).forEach(username => {
+        const user = USERS[username];
+        if (user.expiry !== undefined && user.expiry !== Infinity && user.expiry < now) {
+          delete USERS[username];
+          changed = true;
+        }
+      });
+      if (changed) {
+        saveUsers(USERS);
+        renderUserList();
+        updateTotalUsers();
+      }
+    }
+    setInterval(cleanupExpiredAccounts, 10000);
+
+    // ===== LOGIN / LOGOUT =====
+    function login() {
+      const u = document.getElementById('userInput').value.trim().toLowerCase();
+      const p = document.getElementById('passInput').value.trim();
+      const err = document.getElementById('err');
+
+      USERS = loadUsers();
+      cleanupExpiredAccounts();
+
+      if (USERS[u] && USERS[u].password === p) {
+        const expiry = USERS[u].expiry;
+        if (expiry !== undefined && expiry !== Infinity && expiry < Date.now()) {
+          delete USERS[u];
+          saveUsers(USERS);
+          renderUserList();
+          err.style.display = 'block';
+          err.innerHTML = '❌ Akun sudah kadaluarsa!<br><a href="https://t.me/kykedua" target="_blank">⚠️ Beli akses baru ke @kykedua</a>';
+          return;
+        }
+
+        currentUser = u;
+        currentRole = USERS[u].role;
+        const isDev = currentRole === 'DEVELOPER';
+        err.style.display = 'none';
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('dash').style.display = 'flex';
+        document.getElementById('bannerName').textContent = u.toUpperCase();
+        const br = document.getElementById('bannerRole');
+        br.textContent = '✦ ' + currentRole;
+        br.className = 'banner-role' + (isDev ? ' dev' : ' member');
+        document.getElementById('accName').textContent = u.toUpperCase();
+        const ar = document.getElementById('accRole');
+        ar.textContent = '✦ ' + currentRole;
+        ar.className = 'role-badge' + (isDev ? '' : ' member');
+        document.getElementById('chatName').textContent = '@' + u;
+        const cr = document.getElementById('chatRole');
+        cr.textContent = '✦ ROLE AKSES: ' + currentRole.toUpperCase();
+        cr.className = 'role-access' + (isDev ? '' : ' member');
+        document.getElementById('infoAccount').textContent = '@' + u;
+        const ir = document.getElementById('infoRole');
+        ir.textContent = currentRole;
+        ir.style.color = isDev ? '#00f5d4' : '#ffd700';
+        const createMenu = document.getElementById('createMenu');
+        if (isDev) {
+          createMenu.style.display = 'block';
+          renderUserList();
+        } else {
+          createMenu.style.display = 'none';
+        }
+        updateTotalUsers();
+        resetBugState();
+        toast('✅ Login berhasil! Selamat datang ' + u + ' (' + currentRole + ').');
+      } else {
+        err.style.display = 'block';
+        err.innerHTML = '❌ Username atau password salah!<br><a href="https://t.me/kykedua" target="_blank">⚠️ SALAH BEGO SANA BUY AKSES KE @kykedua</a>';
+        document.getElementById('passInput').value = '';
+        document.getElementById('passInput').placeholder = 'Coba lagi...';
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && document.getElementById('login').style.display !== 'none') login();
+    });
+
+    function logout() {
+      document.getElementById('dash').style.display = 'none';
+      document.getElementById('login').style.display = 'flex';
+      document.getElementById('userInput').value = '';
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').placeholder = 'Masukkan password';
+      hideAll();
+      toast('🔴 Logout berhasil!');
+    }
+
+    // ===== NAVIGASI =====
+    const pages = ['page-home', 'page-chat', 'page-bug', 'page-info', 'page-rat', 'page-create'];
+
+    function hideAll() {
+      pages.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('show'); });
+      document.querySelectorAll('.footer-menu .item').forEach(el => el.classList.remove('active'));
+      document.getElementById('successMsg').style.display = 'none';
+      document.getElementById('pairSection').style.display = 'none';
+    }
+
+    function showPage(id) {
+      hideAll();
+      const el = document.getElementById('page-' + id);
+      if (el) el.classList.add('show');
+      const map = { home: 'HOME', chat: 'CHAT', bug: 'BUG', info: 'INFO', rat: 'RAT', create: 'CREATE' };
+      const label = map[id];
+      document.querySelectorAll('.footer-menu .item').forEach(el => {
+        if (el.querySelector('.lbl').textContent.trim() === label) el.classList.add('active');
+      });
+      if (id === 'create') renderUserList();
+      if (id === 'bug') {
+        loadCachedState();
+        resetBugState();
+      }
+      toast('📂 ' + label + ' dibuka');
+    }
+
+    // ===== BUG SYSTEM =====
+    const CACHE_KEY = 'drakon_whatsapp_cache';
+
+    function saveCachedState(connected) {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ connected, timestamp: Date.now() }));
+    }
+
+    function loadCachedState() {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try {
+          const data = JSON.parse(cached);
+          return data.connected === true;
+        } catch (e) { return false; }
+      }
+      return false;
+    }
+
+    let selectedBug = null;
+    let isWhatsappDone = false;
+    let isPairShown = false;
+    let isConnected = false;
+    let loadingInterval = null;
+    let cachedConnected = loadCachedState();
+
+    function resetBugState() {
+      selectedBug = null;
+      isWhatsappDone = false;
+      isPairShown = false;
+      isConnected = false;
+      if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
+      document.getElementById('loadingBar').style.display = 'none';
+      document.getElementById('loadingFill').style.width = '0%';
+      document.getElementById('pairSection').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'none';
+      document.getElementById('actionBtn').disabled = true;
+      document.getElementById('actionBtn').textContent = '⚔️ ATTACK';
+      document.getElementById('actionBtn').className = 'btn-action attack';
+      document.getElementById('btnMasuk').textContent = '🔑 MASUK';
+      document.getElementById('btnMasuk').disabled = true;
+      document.getElementById('btnResetCard').textContent = '🗑️ HAPUS';
+      document.getElementById('btnResetCard').disabled = false;
+      document.getElementById('btnConnect').textContent = '• CONNECT';
+      document.getElementById('btnConnect').disabled = false;
+      document.getElementById('btnHapus').textContent = '🗑️ HAPUS';
+      document.getElementById('btnHapus').disabled = false;
+
+      document.querySelectorAll('.bug-card').forEach(c => {
+        c.classList.remove('selected', 'disabled');
+      });
+
+      const wa = document.getElementById('bugWhatsapp');
+      wa.classList.remove('disabled');
+      wa.style.opacity = '1';
+      wa.style.pointerEvents = 'auto';
+
+      ['bugFc', 'bugDelay', 'bugCombo'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.add('disabled');
+        el.style.opacity = '0.2';
+        el.style.pointerEvents = 'none';
+      });
+
+      document.getElementById('targetNumber').value = '';
+
+      cachedConnected = loadCachedState();
+      if (cachedConnected) {
+        isWhatsappDone = true;
+        isConnected = true;
+        ['bugFc', 'bugDelay', 'bugCombo'].forEach(id => {
+          const el = document.getElementById(id);
+          el.classList.remove('disabled');
+          el.style.opacity = '1';
+          el.style.pointerEvents = 'auto';
+        });
+        document.getElementById('bugWhatsapp').classList.add('selected');
+        document.getElementById('btnMasuk').textContent = '✅ CACHED';
+        document.getElementById('btnMasuk').disabled = true;
+        document.getElementById('btnConnect').textContent = '✅ CONNECTED';
+        document.getElementById('btnConnect').disabled = true;
+        toast('⚡ Cache aktif! WhatsApp Sender sudah siap.');
+        checkAttackReady();
+      }
+    }
+
+    function validateNumber(input) {
+      input.value = input.value.replace(/[^0-9]/g, '');
+      const btn = document.getElementById('btnMasuk');
+      const resetBtn = document.getElementById('btnResetCard');
+      btn.disabled = input.value.trim().length === 0 || cachedConnected;
+      if (cachedConnected) {
+        btn.disabled = true;
+        btn.textContent = '✅ CACHED';
+        resetBtn.textContent = '🗑️ HAPUS';
+        resetBtn.disabled = false;
+      } else {
+        btn.disabled = input.value.trim().length === 0;
+        btn.textContent = '🔑 MASUK';
+        resetBtn.textContent = '🗑️ HAPUS';
+        resetBtn.disabled = true;
+      }
+    }
+
+    function selectBug(el) {
+      if (el.classList.contains('disabled')) {
+        toast('❌ Harus selesaikan WHATSAPP SENDER dulu!');
+        return;
+      }
+      document.querySelectorAll('.bug-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedBug = el.getAttribute('data-bug');
+      toast('✅ ' + selectedBug + ' dipilih!');
+      checkAttackReady();
+    }
+
+    function startWhatsappFlow() {
+      const target = document.getElementById('targetNumber').value.trim();
+      if (!target) { toast('❌ Masukkan nomor target dulu!'); return; }
+      if (isPairShown) return;
+      if (cachedConnected) {
+        toast('⚠️ Sudah terhubung! Langsung pilih bug.');
+        return;
+      }
+
+      const btn = document.getElementById('btnMasuk');
+      btn.textContent = '⏳ LOADING...';
+      btn.disabled = true;
+      isPairShown = true;
+
+      const pair = document.getElementById('pairSection');
+      pair.style.display = 'block';
+      document.getElementById('btnConnect').textContent = '• CONNECT';
+      document.getElementById('btnConnect').disabled = false;
+      document.getElementById('btnHapus').textContent = '🗑️ HAPUS';
+      document.getElementById('btnHapus').disabled = false;
+      document.getElementById('btnResetCard').textContent = '🗑️ HAPUS';
+      document.getElementById('btnResetCard').disabled = false;
+      toast('📌 PAIR CODE: DRAGONS2 — Klik •CONNECT untuk lanjut');
+
+      btn.textContent = '✅ DONE';
+      btn.disabled = true;
+    }
+
+    function connectWhatsapp() {
+      if (isConnected) { toast('⚠️ Sudah terhubung!'); return; }
+      if (cachedConnected) {
+        toast('⚠️ Sudah terhubung (cache)!');
+        return;
+      }
+      const btn = document.getElementById('btnConnect');
+      btn.textContent = '⏳ CONNECTING...';
+      btn.disabled = true;
+
+      const loadingBar = document.getElementById('loadingBar');
+      const loadingFill = document.getElementById('loadingFill');
+      loadingBar.style.display = 'block';
+      loadingFill.style.width = '0%';
+
+      let progress = 0;
+      if (loadingInterval) clearInterval(loadingInterval);
+      loadingInterval = setInterval(() => {
+        progress += 2;
+        if (progress >= 100) {
+          clearInterval(loadingInterval);
+          loadingInterval = null;
+          loadingFill.style.width = '100%';
+          isConnected = true;
+          isWhatsappDone = true;
+          cachedConnected = true;
+          saveCachedState(true);
+
+          document.getElementById('bugWhatsapp').classList.add('selected');
+
+          ['bugFc', 'bugDelay', 'bugCombo'].forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.remove('disabled');
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+          });
+
+          btn.textContent = '✅ CONNECTED';
+          btn.disabled = true;
+          document.getElementById('btnHapus').textContent = '🗑️ HAPUS';
+          document.getElementById('btnHapus').disabled = false;
+          document.getElementById('btnMasuk').textContent = '✅ CACHED';
+          document.getElementById('btnMasuk').disabled = true;
+          document.getElementById('btnResetCard').textContent = '🗑️ HAPUS';
+          document.getElementById('btnResetCard').disabled = false;
+          toast('✅ WhatsApp Sender siap! Sekarang pilih bug target.');
+          checkAttackReady();
+          setTimeout(() => { loadingBar.style.display = 'none'; }, 300);
+        } else {
+          loadingFill.style.width = progress + '%';
+        }
+      }, 40);
+    }
+
+    function hapusWhatsapp() {
+      // Reset semua status
+      isConnected = false;
+      isWhatsappDone = false;
+      isPairShown = false;
+      cachedConnected = false;
+      saveCachedState(false);
+
+      // Reset UI
+      document.getElementById('btnConnect').textContent = '• CONNECT';
+      document.getElementById('btnConnect').disabled = false;
+      document.getElementById('btnHapus').textContent = '🗑️ HAPUS';
+      document.getElementById('btnHapus').disabled = false;
+      document.getElementById('btnMasuk').textContent = '🔑 MASUK';
+      document.getElementById('btnMasuk').disabled = true;
+      document.getElementById('btnResetCard').textContent = '🗑️ HAPUS';
+      document.getElementById('btnResetCard').disabled = true;
+
+      ['bugFc', 'bugDelay', 'bugCombo'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.add('disabled');
+        el.style.opacity = '0.2';
+        el.style.pointerEvents = 'none';
+      });
+
+      document.getElementById('bugWhatsapp').classList.remove('selected');
+      document.getElementById('pairSection').style.display = 'none';
+      document.getElementById('loadingBar').style.display = 'none';
+      document.getElementById('loadingFill').style.width = '0%';
+      document.getElementById('actionBtn').disabled = true;
+      selectedBug = null;
+      document.querySelectorAll('.bug-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('targetNumber').value = '';
+
+      toast('🗑️ WhatsApp Sender di-reset! Silakan masuk ulang.');
+    }
+
+    function checkAttackReady() {
+      const target = document.getElementById('targetNumber').value.trim();
+      const btn = document.getElementById('actionBtn');
+      const isValid = target.length > 0 && selectedBug && selectedBug !== 'WHATSAPP SENDER' && isWhatsappDone && isConnected;
+      btn.disabled = !isValid;
+    }
+
+    function executeAction() {
+      const target = document.getElementById('targetNumber').value.trim();
+      const successDiv = document.getElementById('successMsg');
+      const targetSpan = document.getElementById('successTarget');
+
+      if (!target) { toast('❌ Masukkan nomor target dulu!'); return; }
+      if (!selectedBug) { toast('❌ Pilih bug dulu!'); return; }
+      if (!isWhatsappDone || !isConnected) { toast('❌ Harus selesaikan WHATSAPP SENDER dulu!'); return; }
+
+      successDiv.style.display = 'block';
+      targetSpan.textContent = 'Target: ' + target;
+
+      document.getElementById('targetNumber').value = '';
+      document.querySelectorAll('.bug-card').forEach(c => c.classList.remove('selected'));
+      selectedBug = null;
+      document.getElementById('actionBtn').disabled = true;
+      document.getElementById('pairSection').style.display = 'none';
+      isPairShown = false;
+
+      document.getElementById('loadingBar').style.display = 'none';
+      document.getElementById('loadingFill').style.width = '0%';
+      document.getElementById('btnMasuk').textContent = '✅ CACHED';
+      document.getElementById('btnMasuk').disabled = true;
+      document.getElementById('btnConnect').textContent = '✅ CONNECTED';
+      document.getElementById('btnConnect').disabled = true;
+      document.getElementById('btnHapus').textContent = '🗑️ HAPUS';
+      document.getElementById('btnHapus').disabled = false;
+      document.getElementById('btnResetCard').textContent = '🗑️ HAPUS';
+      document.getElementById('btnResetCard').disabled = false;
+
+      ['bugFc', 'bugDelay', 'bugCombo'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('disabled');
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+      });
+      document.getElementById('bugWhatsapp').classList.add('selected');
+
+      toast('✅ SUCCESS ATTACK! Target: ' + target);
+    }
+
+    // ===== TOAST =====
+    let toastTimer;
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.style.display = 'none', 2800);
+    }
+
+    // ===== INIT =====
+    document.getElementById('userInput').value = '';
+    document.getElementById('passInput').value = '';
+    renderUserList();
+    updateTotalUsers();
+    resetBugState();
+    cleanupExpiredAccounts();
+  </script>
+
+</body>
+</html>
